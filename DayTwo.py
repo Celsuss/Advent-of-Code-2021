@@ -1,4 +1,3 @@
-import Util
 import numpy as np
 import pandas as pd
 
@@ -15,7 +14,7 @@ def processData(data):
         processed_data.append(processRow(row))
     return processed_data
 
-def getLocation(data):
+def getLocationPartOne(data):
     x = 0
     y = 0
     for (direction, length) in data:
@@ -28,11 +27,28 @@ def getLocation(data):
 
     return x, y
 
+def getLocationPartTwo(data):
+    x = 0
+    y = 0
+    aim = 0
+
+    for (direction, length) in data:
+        length = int(length)
+        if direction == 'forward':
+            x += length
+            y += (length*aim)
+        elif direction == 'down':
+            aim += length
+        elif direction == 'up':
+            aim -= length
+
+    return x, y
+
 def main():
     # Part one test
     data = getData('data/2-part-1-test.txt')
     data = processData(data)
-    x, y = getLocation(data)
+    x, y = getLocationPartOne(data)
     prod = x * y
     assert x == 15
     assert y == 10
@@ -41,9 +57,25 @@ def main():
     # Part one
     data = getData('data/2-part-1.txt')
     data = processData(data)
-    x, y = getLocation(data)
+    x, y = getLocationPartOne(data)
     prod = x * y
     print('Part one:', prod)
+
+    # Part two test
+    data = getData('data/2-part-1-test.txt')
+    data = processData(data)
+    x, y = getLocationPartTwo(data)
+    prod = x * y
+    assert x == 15
+    assert y == 60
+    assert prod == 900
+
+    # Part two
+    data = getData('data/2-part-1.txt')
+    data = processData(data)
+    x, y = getLocationPartTwo(data)
+    prod = x * y
+    print('Part two:', prod)
 
     return 0
 
