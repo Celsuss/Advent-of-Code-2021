@@ -56,21 +56,21 @@ def getVerticalScore():
     return
 
 def detectBingo(boards_dict, boards_score):
-    for board_dict, board_score in zip(boards_dict, boards_score):
+    for index, (board_dict, board_score) in enumerate(zip(boards_dict, boards_score)):
         for row in board_score:
             if np.sum(row) == board_score.shape[0]:
                 # Bingo in a row detected
                 print('Bingo!')
-                return board_dict, board_score
+                return board_dict, board_score, index
 
         for i in range(board_score.shape[1]):
             if np.sum(board_score[:,i]) == board_score.shape[1]:
                 print('Bingo!')
-                return board_dict, board_score
+                return board_dict, board_score, index
 
         continue
 
-    return None, None
+    return None, None, None
 
 def getSumOfUnmarkedNumbers(winning_board_dict, winning_board_score):
     sum = 0
@@ -100,15 +100,25 @@ def createBoardsDicts(boards):
 
     return boards_dicts
 
-def playBingo(moves, boards):
+def playBingo(moves, boards, n_winning_boards=1):
     boards_score = generateBoardScore(boards)
     boards_dict = createBoardsDicts(boards)
+    n_current_winning_boards = 0
     
     for move in moves:
         processMove(move, boards_dict, boards_score)
-        winning_board_dict, winning_board_score = detectBingo(boards_dict, boards_score)
-        if winning_board_dict is not None:
+        winning_board_dict, winning_board_score, index = detectBingo(boards_dict, boards_score)
+        if winning_board_dict is None:
+            continue
+
+        n_current_winning_boards += 1
+        if n_current_winning_boards >= n_winning_boards:
             return winning_board_dict, winning_board_score, int(move)
+
+        del boards_dict[index]
+        np.delete(boards_score, index, 0)
+        winning_board_dict = None
+        winning_board_score = None
 
         continue
 
@@ -130,6 +140,15 @@ def main():
     sum = getSumOfUnmarkedNumbers(winning_board_dict, winning_board_score)
     final_product = sum * winning_move
     print('Part one:', final_product)
+
+    # Part two test
+    moves, boards = getData('data/4-test.txt')
+    winning_board_dict, winning_board_score, winning_move = playBingo(moves, boards, n_winning_boards=len(boards))
+    sum = getSumOfUnmarkedNumbers(winning_board_dict, winning_board_score)
+    assert sum == 148
+    assert winning_move == 13
+    final_product = sum * winning_move
+    assert final_product == 1924
 
     return
 
